@@ -44,6 +44,7 @@ public class Game extends Canvas implements Runnable{
 	private JFrame frame;
 	
 	private boolean running = false;
+	private int seed = 10000;
 	
 	private BufferedImage f1;
 	private BufferedImage f2;
@@ -54,6 +55,7 @@ public class Game extends Canvas implements Runnable{
 	
 	private Controller c;
 	private Player p;
+	private String pName;
 	private int maxHealth = 8;
 	private int gridHeight = 12;
 	private int health = 8;
@@ -176,12 +178,11 @@ public class Game extends Canvas implements Runnable{
 	
 	public void init(){
 		this.requestFocus();
-		addKeyListener(new KeyInput(this));
+		addKeyListener(new KeyInput(this));//add key adapter to the games canvas
 
-		//String ip =  JOptionPane.showInputDialog ("IP address below.","120.149.28.54");
 		String ip =  JOptionPane.showInputDialog ("IP address below.","localhost"); 
-		//String ip =  JOptionPane.showInputDialog ("IP address below.","192.168.0.9");
-		//String ip =  JOptionPane.showInputDialog ("IP address below.","10.128.211.25");
+	
+		//connects
 		try{
 			socket = new Socket(ip, 7776);
 		} catch (IOException e){
@@ -195,39 +196,38 @@ public class Game extends Canvas implements Runnable{
 			e1.printStackTrace();
 		}
 		
-		Client input = new Client(in, this);
-		Thread thread = new Thread(input);
-		thread.start();
-		
-		String name = JOptionPane.showInputDialog ("Please enter your name below.","bob");
+		pName = JOptionPane.showInputDialog ("Please enter your name below.","bob");
 
+		//loads in sprites
 		f1 = Sprite.getSprite(0, 0, 8, 16);
 		f2 = Sprite.getSprite(1, 0, 8, 8);
 		f3 = Sprite.getSprite(1, 1, 8, 8);
 		f4 = Sprite.getSprite(2, 0, 8, 8);
 		tImage = Sprite.getSprite(0, 4, 25, 35);
 		
-		Random rand = new Random();
-		p = new Player(WORLDWIDTH/2,WORLDHEIGHT/2,SCALE, name, out);
+		Random rand = new Random(seed);
+		
+		//creates instances of important objects
+		p = new Player(WORLDWIDTH/2,WORLDHEIGHT/2,SCALE, pName, out);
 		cam = new Camera((int)(WIDTH * SCALE),(int)(HEIGHT * SCALE),WORLDWIDTH,WORLDHEIGHT);
 		c = new Controller(p, cam, (int)(HEIGHT * SCALE));
 		
 		try {
-			out.writeUTF(name);
+			out.writeUTF(pName);// on init tell server what name is
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		
-	    int fNum = rand.nextInt(10) + 40;
-	    for(int i = 0; i < fNum; i++){
+	    int flowerNum = rand.nextInt(10) + 40;
+	    for(int i = 0; i < flowerNum; i++){
+	    	//random coordinates
 	    	int randomX = rand.nextInt((WORLDWIDTH) + 1);
 	    	int randomY = rand.nextInt((WORLDHEIGHT) + 1);
 	    	randomX = Math.round((randomX/4))*4;
 	    	randomY = Math.round((randomY/4))*4;
 
+	    	//gets random flower image
 	    	int randomImg = rand.nextInt(4);
-	    	
 	    	switch(randomImg){
 	    	case 0: fImage = f1; break;
 	    	case 1: fImage = f2; break;
@@ -235,10 +235,10 @@ public class Game extends Canvas implements Runnable{
 	    	case 3: fImage = f4; break;
 	    	}
 	    	c.addObject(new Flower(randomX,randomY,ObjectId.Flower,SCALE,fImage));
-	    	
 	    }
-	    int tNum = rand.nextInt(10) + 30;
-	    for(int i = 0; i < tNum; i++){
+	    int treeNum = rand.nextInt(10) + 30;
+	    for(int i = 0; i < treeNum; i++){
+	    	//random coordinates
 	    	int randomX = rand.nextInt((WORLDWIDTH));
 	    	int randomY = rand.nextInt((WORLDHEIGHT));
 	    	randomX = Math.round((randomX/4))*4;
@@ -246,29 +246,42 @@ public class Game extends Canvas implements Runnable{
 	   
 	    	c.addObject(new Tree(randomX,randomY,ObjectId.Tree,SCALE,tImage));
 	    }
+	    
+	    Client input = new Client(in, this);
+		Thread thread = new Thread(input);
+		thread.start();
 	}
 	
 	public static void main(String[] args){
-		Game game = new Game();
+		//First line that get called on launch
+		Game game = new Game();//makes new instance of game
 		game.init();
 		game.start();
 	}
-	public void keyReleased(KeyEvent e) {
+	public void keyReleased(KeyEvent e){
+		//when game class recives call from key adapter
 		p.keyReleased(e);
 	}
 	public void keyPressed(KeyEvent e) {
 		p.keyPressed(e);
 	}
 	public void recive(String e){
-		String[] parts = e.split(";");
-		if(parts[0].equals("c")){
+		//when game class recives input from client listener
+		String[] parts = e.split(";");//store string data in array
+		
+		if(parts[0].equals("c")){ //create player
 			c.addObject(new OtherPlayer(1000,1000,ObjectId.OtherPlayer,SCALE,Sprite.getSprite(3, 0, 8, 16), parts[1]));
+			System.out.println(pName);
+			try {
+				out.writeUTF("u;"+pName+";"+p.getX()/SCALE+";"+p.getY()/SCALE);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
-		if(parts[0].equals("u")){
+		if(parts[0].equals("u")){ //update pos
 			int x = (int) (Float.parseFloat(parts[2])*SCALE);
 			int y = (int) (Float.parseFloat(parts[3])*SCALE);
-			for(int i = 0; i < c.object.size(); i++)
-			{
+			for(int i = 0; i < c.object.size(); i++){
 				GameObject tempObject = c.object.get(i);
 				if(tempObject.getId() == ObjectId.OtherPlayer){
 					if(parts[1].equals(tempObject.getName())){
@@ -278,7 +291,7 @@ public class Game extends Canvas implements Runnable{
 				}
 			}
 		}
-		if(parts[0].equals("v")){
+		if(parts[0].equals("v")){ // update velocity
 			int xV = (int) (Float.parseFloat(parts[2])*SCALE);
 			int yV = (int) (Float.parseFloat(parts[3])*SCALE);
 			for(int i = 0; i < c.object.size(); i++){
@@ -291,7 +304,7 @@ public class Game extends Canvas implements Runnable{
 				}
 			}
 		}
-		if(parts[0].equals("l")){
+		if(parts[0].equals("l")){ // player leave
 			for(int i = 0; i < c.object.size(); i++){
 				GameObject tempObject = c.object.get(i);
 				if(tempObject.getId() == ObjectId.OtherPlayer){
@@ -302,5 +315,4 @@ public class Game extends Canvas implements Runnable{
 			}
 		}
 	}
-
 }

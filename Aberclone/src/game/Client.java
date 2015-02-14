@@ -16,9 +16,13 @@ public class Client implements Runnable {
 	public void run(){
 		String message;
 		while(true){
+			try {
+				Thread.sleep(4);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 			try{
 				message = in.readUTF();
-				//JOptionPane.showMessageDialog(null,message,"Message",JOptionPane.INFORMATION_MESSAGE);
 				g.recive(message);
 			} catch(IOException e){
 				e.printStackTrace();

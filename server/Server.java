@@ -45,8 +45,6 @@ class Users implements Runnable{
 	String name;
 	long threadId;
 	Integer self;
-	int x;
-	int y;
 	
 	public Users(DataOutputStream out, DataInputStream in, Users[] user,Integer i){
 		this.out = out;
@@ -58,7 +56,7 @@ class Users implements Runnable{
 		threadId = Thread.currentThread().getId();
 		try{
 			name = in.readUTF();
-			System.out.println("His name is " + name);
+			System.out.println("player name retrived: " + name);
 		} catch(IOException e1) {
 			e1.printStackTrace();
 		}
@@ -113,14 +111,11 @@ class Users implements Runnable{
 					} catch (IOException e3){
 						e2.printStackTrace();		
 					}
-					
-					//System.out.println("Cleaning user "+ self + " at #"+threadId);
 					Server.destroyUser(self);
 					out = null;
 					in = null;
 					user = null;
 					name = null;
-					//threadId = null;
 					self = null;
 					Thread.currentThread().stop();
 				}
