@@ -1,5 +1,6 @@
 package entities;
 
+import game.Game;
 import gfx.Animation;
 
 import java.awt.Color;
@@ -27,6 +28,7 @@ public class Player{
 	private String name;
 	private DataOutputStream out;
 	private int lastKey;
+	private boolean collide = false;
 	
 	private BufferedImage playerUp = Sprite.getSprite(4,0,8,16);
 	private BufferedImage playerDown = Sprite.getSprite(3,0,8,16);
@@ -78,14 +80,14 @@ public class Player{
 	}
 	private void updatePos(){
 		try {
-			out.writeUTF("u;"+name+";"+x+";"+y);
+			out.writeUTF("u;"+name+";"+x/SCALE+";"+y/SCALE);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
 	private void updateVel(){
 		try {
-			out.writeUTF("v;"+name+";"+xV+";"+yV);
+			out.writeUTF("v;"+name+";"+xV/SCALE+";"+yV/SCALE);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -95,6 +97,10 @@ public class Player{
 		x += xV;
 		y += yV;
 		currentAnimation.update();
+		if(x<0){x=0;}
+		if(y<0+73*SCALE){y=0+73*SCALE;}
+		if(y>Game.WORLDHEIGHT){y = Game.WORLDHEIGHT;}
+		if(x>Game.WORLDWIDTH){x = Game.WORLDWIDTH;}
 	}
 	public void render(Graphics g){
 		g.drawImage(imageUpper,(int)(x - (imageUpper.getWidth()*SCALE*4)/2), (int)((y - imageUpper.getHeight()*SCALE*4)-4*SCALE),(int)((imageUpper.getWidth()*SCALE*4)),(int)( imageUpper.getHeight()*SCALE*4), null);
@@ -128,6 +134,7 @@ public class Player{
 			GameObject tempObject = c.object.get(i);
 			if(tempObject.getId() == ObjectId.Tree || tempObject.getId() == ObjectId.Flower){
 				if(getBounds().intersects(tempObject.rect)){
+					sendCollide();
 					if(y >= tempObject.y){
 						y = tempObject.y+4;
 					}
@@ -138,6 +145,14 @@ public class Player{
 			}
 		}
 	}
+	private void sendCollide() {
+		if(collide != true){
+			collide = true;
+			xV = 0;
+			yV = 0;
+			updateVel();
+		}
+	}
 	private void snap(){
 		x = Math.round((x/4))*4;
     	y = Math.round((y/4))*4;
@@ -145,11 +160,11 @@ public class Player{
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		
-		
 		if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W){
 			yV = -pSpeed;
 			if(lastKey != keyCode){
 				updateVel();
+				collide = false;
 			}
 			if (xV == 0 ){
 				imageUpper = playerUp;
@@ -162,6 +177,7 @@ public class Player{
 			yV = pSpeed;
 			if(lastKey != keyCode){
 				updateVel();
+				collide = false;
 			}
 			if (xV == 0 ){
 				imageUpper = playerDown;
@@ -174,6 +190,7 @@ public class Player{
 			xV = -pSpeed;
 			if(lastKey != keyCode){
 				updateVel();
+				collide = false;
 			}
 			currentAnimation.stop();
 			currentAnimation = animationLeft;
@@ -184,6 +201,7 @@ public class Player{
 			xV = pSpeed;
 			if(lastKey != keyCode){
 				updateVel();
+				collide = false;
 			}
 			currentAnimation.stop();
 			currentAnimation = animationRight;

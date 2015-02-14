@@ -37,8 +37,8 @@ public class Game extends Canvas implements Runnable{
 	private static final double SCALE = 1;
 	private static final int WIDTH = 630;
 	private static final int HEIGHT = 470;
-	private int WORLDWIDTH = (int) (2000 * SCALE);
-	private int WORLDHEIGHT = (int) (2000 * SCALE);
+	public static final int WORLDWIDTH = (int) (2000 * SCALE);
+	public static final int WORLDHEIGHT = (int) (2000 * SCALE);
 	
 	private static final String NAME = "Aber-clone Multiplayer";
 	private JFrame frame;
@@ -56,7 +56,9 @@ public class Game extends Canvas implements Runnable{
 	private Player p;
 	private int maxHealth = 8;
 	private int gridHeight = 12;
-	private int health = 7;
+	private int health = 8;
+	private Color barColor = Color.white;
+	//private Color barColor = new Color(255, 255, 255, 111);
 	private Camera cam;
 	
 	public Game(){
@@ -147,12 +149,13 @@ public class Game extends Canvas implements Runnable{
 		g.fillRect(getWidth()-13,(int)(getHeight()-(gridHeight*maxHealth)),12,(int)(gridHeight*maxHealth));
 		g.setColor(new Color(0xFF4040));
 		g.fillRect(getWidth()-13,(int)(getHeight()-(gridHeight*health)),12,(int)(gridHeight*health));
-		g.setColor(Color.white);
-		g.drawRect(getWidth()-13,(int)(getHeight()-(gridHeight*maxHealth)),12,(int)(gridHeight*maxHealth)-1);
-		
+		g.setColor(barColor);
 		for(int i = 0; i < gridHeight*maxHealth; i += gridHeight){
 			g.drawLine(getWidth()-13, getHeight()-i, getWidth(), getHeight()-i);
 		}
+		g.setColor(Color.white);
+		g.drawRect(getWidth()-13,(int)(getHeight()-(gridHeight*maxHealth)),12,(int)(gridHeight*maxHealth)-1);
+		
 		
 		
 		g.setFont( new Font("", Font.PLAIN, 12));
@@ -262,8 +265,8 @@ public class Game extends Canvas implements Runnable{
 			c.addObject(new OtherPlayer(1000,1000,ObjectId.OtherPlayer,SCALE,Sprite.getSprite(3, 0, 8, 16), parts[1]));
 		}
 		if(parts[0].equals("u")){
-			int x = (int) Float.parseFloat(parts[2]);
-			int y = (int) Float.parseFloat(parts[3]);
+			int x = (int) (Float.parseFloat(parts[2])*SCALE);
+			int y = (int) (Float.parseFloat(parts[3])*SCALE);
 			for(int i = 0; i < c.object.size(); i++)
 			{
 				GameObject tempObject = c.object.get(i);
@@ -276,15 +279,24 @@ public class Game extends Canvas implements Runnable{
 			}
 		}
 		if(parts[0].equals("v")){
-			int xV = (int) Float.parseFloat(parts[2]);
-			int yV = (int) Float.parseFloat(parts[3]);
-			for(int i = 0; i < c.object.size(); i++)
-			{
+			int xV = (int) (Float.parseFloat(parts[2])*SCALE);
+			int yV = (int) (Float.parseFloat(parts[3])*SCALE);
+			for(int i = 0; i < c.object.size(); i++){
 				GameObject tempObject = c.object.get(i);
 				if(tempObject.getId() == ObjectId.OtherPlayer){
 					if(parts[1].equals(tempObject.getName())){
 						tempObject.setxV(xV);
 						tempObject.setyV(yV);
+					}
+				}
+			}
+		}
+		if(parts[0].equals("l")){
+			for(int i = 0; i < c.object.size(); i++){
+				GameObject tempObject = c.object.get(i);
+				if(tempObject.getId() == ObjectId.OtherPlayer){
+					if(parts[1].equals(tempObject.getName())){
+						c.removeObject(tempObject);
 					}
 				}
 			}

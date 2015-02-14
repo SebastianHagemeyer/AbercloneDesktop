@@ -61,7 +61,7 @@ public class OtherPlayer extends GameObject{
 	public void tick(LinkedList<GameObject> object) {
 		x += xV;
 		y += yV;
-		if(xV > 0 && yV == 0){
+		if(xV > 0){
 			image = playerRight;
 			if(currentAnimation != animationRight || stopped){
 				stopped = false;
@@ -70,7 +70,7 @@ public class OtherPlayer extends GameObject{
 				currentAnimation.start();
 			}
 		}
-		if(xV < 0 && yV == 0){
+		if(xV < 0 ){
 			image = playerLeft;
 			if(currentAnimation != animationLeft || stopped){
 				stopped = false;
@@ -79,9 +79,8 @@ public class OtherPlayer extends GameObject{
 				currentAnimation.start();
 			}
 		}
-		if(yV > 0){
+		if(yV > 0 && xV == 0){
 			image = playerDown;
-			
 			if(currentAnimation != animationDown || stopped){
 				stopped = false;
 				currentAnimation.stop();
@@ -89,7 +88,7 @@ public class OtherPlayer extends GameObject{
 				currentAnimation.start();
 			}
 		}
-		if(yV < 0){
+		if(yV < 0 && xV == 0){
 			image = playerUp;
 			if(currentAnimation != animationDown || stopped){
 				stopped = false;
