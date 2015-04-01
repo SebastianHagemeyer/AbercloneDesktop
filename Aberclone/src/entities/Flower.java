@@ -9,7 +9,7 @@ import util.ObjectId;
 
 public class Flower extends GameObject{
 
-	public Flower(double x, double y, ObjectId id, double SCALE,
+	public Flower(int x, int y, ObjectId id, double SCALE,
 			BufferedImage image) {
 		super(x, y, id, SCALE, image);
 		rect = new Rectangle((int)x,(int)(y-4*SCALE),(int)(4*SCALE),(int)(4*SCALE));
@@ -17,16 +17,16 @@ public class Flower extends GameObject{
 	
 	public void render(Graphics g){
 		g.drawImage(image,(int)(x - (image.getWidth()*SCALE*4)/2), (int)(y - image.getHeight()*SCALE*4),(int)(image.getWidth()*SCALE*4 ),(int)( image.getHeight()*SCALE*4), null);
-		//Graphics2D g2d = (Graphics2D) g;
-		//g2d.setColor(Color.RED);
-		//g2d.draw(rect);
+		/*Graphics2D g2d = (Graphics2D) g;
+		g2d.setColor(Color.RED);
+		g2d.draw(rect);*/
 	}
 
 	public void tick(LinkedList<GameObject> object) {
 		
 	}
 
-	public double getY() {
+	public int getY() {
 		return y;
 	}
 

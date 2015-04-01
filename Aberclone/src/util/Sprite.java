@@ -23,12 +23,13 @@ public class Sprite {
         return sprite;
     }
 
-    public static BufferedImage getSprite(int xPos, int yPos, int xSize, int ySize) {
+    public static BufferedImage getSprite(double d, int yPos, int xSize, int ySize) {
 
         if (spriteSheet == null) {
             spriteSheet = loadSprite("sheet");
         }
-
-        return spriteSheet.getSubimage(xPos*8, yPos*8, xSize, ySize);
+        BufferedImage temp;
+        temp = spriteSheet.getSubimage((int) (d*8), yPos*8, xSize, ySize);
+        return temp;
     }
 }

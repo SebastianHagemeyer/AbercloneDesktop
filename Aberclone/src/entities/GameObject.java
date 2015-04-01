@@ -9,7 +9,7 @@ import util.ObjectId;
 
 public abstract class GameObject {
 	
-	protected double x,y;
+	protected int x,y;
 	protected ObjectId id;
 	protected double SCALE;
 	protected BufferedImage image;
@@ -17,8 +17,9 @@ public abstract class GameObject {
 	public String name;
 	public int xV;
 	public int yV;
+	public String say;
 	
-	public GameObject(double x, double y, ObjectId id, double SCALE, BufferedImage image){
+	public GameObject(int x, int y, ObjectId id, double SCALE, BufferedImage image){
 		this.x = x;
 		this.y = y;
 		this.id = id;
@@ -29,17 +30,18 @@ public abstract class GameObject {
 	public abstract void tick(LinkedList<GameObject> object);
 	public abstract void render(Graphics g);
 	
-	public abstract double getY();
+	public abstract int getY();
 	public abstract ObjectId getId();
+	
 	public String getName(){
 		return name;
 	}
 
-	public void setX(double x) {
+	public void setX(int x) {
 		this.x = x;
 	}
 
-	public void setY(double y) {
+	public void setY(int y) {
 		this.y = y;
 	}
 	public void setxV(int xV){
@@ -47,5 +49,13 @@ public abstract class GameObject {
 	}
 	public void setyV(int yV){
 		this.yV = yV;
+	}
+
+	public void say(String say) {
+		this.say = say;
+	}
+
+	public int getX() {
+		return x;
 	}
 }

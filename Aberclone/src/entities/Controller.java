@@ -12,11 +12,13 @@ public class Controller {
 	private Player p;
 	private Camera c;
 	private int HEIGHT;
+	private int WIDTH;
 	
-	public Controller(Player p, Camera c, int HEIGHT){
+	public Controller(Player p, Camera c, int HEIGHT, int WIDTH){
 		this.p = p;
 		this.c = c;
 		this.HEIGHT = HEIGHT;
+		this.WIDTH = WIDTH;
 	}
 	
 	public void tick(){
@@ -28,28 +30,24 @@ public class Controller {
 	}
 	
 	public void render(Graphics g){
-		double py = p.getY();
-		double cy = c.getY();
-		
-		for (int i = 0; i < object.size(); i++){
-			tempObject = object.get(i);
-			double y = tempObject.getY();
-			if(-y < cy-10){
-				if(y <= py){
-					tempObject.render(g);
+		int py = p.getY();
+		int cy = -c.getY();
+		for (int i = cy; i <= cy+HEIGHT+140; i++){
+			for (int ii = 0; ii < object.size(); ii++){
+				tempObject = object.get(ii);
+				int y = tempObject.getY();
+				
+				if(y == i){
+					if(tempObject.getX() >= -c.getX()){
+						if(tempObject.getX() <= -c.getX()+WIDTH){
+							tempObject.render(g);	
+						}
+					}
 				}
 			}
-		}
-		
-		p.render(g);
-		
-		for (int i = 0; i < object.size(); i++){
-			tempObject = object.get(i);
-			double y = tempObject.getY();
-			if((cy-HEIGHT-100 < -y)){
-				if(tempObject.getY() >= py+1){
-					tempObject.render(g);
-				}
+			
+			if(py == i){
+				p.render(g);
 			}
 		}
 	}

@@ -27,6 +27,7 @@ import entities.GameObject;
 import entities.OtherPlayer;
 import entities.Player;
 import entities.Tree;
+import gfx.Text;
 
 public class Game extends Canvas implements Runnable{
 	private Socket socket;
@@ -40,11 +41,11 @@ public class Game extends Canvas implements Runnable{
 	public static final int WORLDWIDTH = (int) (2000 * SCALE);
 	public static final int WORLDHEIGHT = (int) (2000 * SCALE);
 	
-	private static final String NAME = "Aber-clone Multiplayer";
+	private static final String NAME = "Aber-clone 4";
 	private JFrame frame;
 	
 	private boolean running = false;
-	private int seed = 10000;
+	private int seed = 2634786;
 	
 	private BufferedImage f1;
 	private BufferedImage f2;
@@ -62,6 +63,9 @@ public class Game extends Canvas implements Runnable{
 	private Color barColor = Color.white;
 	//private Color barColor = new Color(255, 255, 255, 111);
 	private Camera cam;
+	
+	private boolean chat = false;
+	private String say = "";
 	
 	public Game(){
 		Dimension dimension = new Dimension((int)(WIDTH * SCALE),(int)(HEIGHT * SCALE));
@@ -89,9 +93,10 @@ public class Game extends Canvas implements Runnable{
 		running = false;
 	}
 	
+	
 	public void run() {
 		long lastTime = System.nanoTime();
-		double nsPerTick = 1000000000D / 60D;
+		double nsPerTick = 1000000000 / 60;
 		int ticks = 0;
 		int frames = 0;
 		long lastTimer = System.currentTimeMillis();
@@ -108,6 +113,11 @@ public class Game extends Canvas implements Runnable{
 				tick();
 				delta -= 1;
 				shouldRender = true;
+			}
+			try {
+				Thread.sleep(2);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 			if(shouldRender){
 				frames ++;
@@ -158,36 +168,49 @@ public class Game extends Canvas implements Runnable{
 		g.setColor(Color.white);
 		g.drawRect(getWidth()-13,(int)(getHeight()-(gridHeight*maxHealth)),12,(int)(gridHeight*maxHealth)-1);
 		
-		
-		
 		g.setFont( new Font("", Font.PLAIN, 12));
 		int x = 10;
 		int y = getHeight()-8;
-		String stats = "Attack: 1(1)       Defense: 1       Gold: 0";
-		g.setColor(Color.black);
-		g.drawString(stats,x- 1,y-1);
-		g.drawString(stats,x- 1, y+1);
-		g.drawString(stats,x+ 1, y-1);
-		g.drawString(stats,x+ 1, y+1);
-		g.setColor(Color.white);
-		g.drawString(stats, x, y);
 		
+		String stats = "Attack: 1(1)       Defense: 1       Gold: 0";
+		Text.renderText(g, stats, x, y, Color.white);
+
+		if(chat){
+			y = 20;
+			Text.renderText(g, "Say: "+say, x, y, Color.white);
+		}
 		g.dispose();
 		bs.show();
 	}
 	
 	public void init(){
+		//String s = JOptionPane.showInputDialog ("Enter world seed.","aberclone"); 
+		
 		this.requestFocus();
 		addKeyListener(new KeyInput(this));//add key adapter to the games canvas
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+		    public void run() {
+		    	try {
+					out.writeUTF("l;"+pName);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		    }
+		});
 
 		String ip =  JOptionPane.showInputDialog ("IP address below.","localhost"); 
+		//String ip =  JOptionPane.showInputDialog ("IP address below.","120.149.28.54"); 
 	
 		//connects
 		try{
-			socket = new Socket(ip, 7776);
+			socket = new Socket(ip, 2021);
 		} catch (IOException e){
-			JOptionPane.showMessageDialog(frame,ip+":7776 was not reachable!","Error",JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
+			try{
+				socket = new Socket(ip, 2042);
+			} catch (IOException e1){
+				JOptionPane.showMessageDialog(frame,ip+" was not reachable!","Error",JOptionPane.ERROR_MESSAGE);
+			}
 		}
 		try {
 			in = new DataInputStream(socket.getInputStream());
@@ -196,29 +219,30 @@ public class Game extends Canvas implements Runnable{
 			e1.printStackTrace();
 		}
 		
-		pName = JOptionPane.showInputDialog ("Please enter your name below.","bob");
+		pName = JOptionPane.showInputDialog ("Please enter your name below.","Player");
+		String color =  JOptionPane.showInputDialog ("Enter player color below.","33CC33"); 
 
 		//loads in sprites
 		f1 = Sprite.getSprite(0, 0, 8, 16);
 		f2 = Sprite.getSprite(1, 0, 8, 8);
 		f3 = Sprite.getSprite(1, 1, 8, 8);
 		f4 = Sprite.getSprite(2, 0, 8, 8);
-		tImage = Sprite.getSprite(0, 4, 25, 35);
+		tImage = Sprite.getSprite(0, 15, 25, 35);
 		
 		Random rand = new Random(seed);
 		
-		//creates instances of important objects
-		p = new Player(WORLDWIDTH/2,WORLDHEIGHT/2,SCALE, pName, out);
+		//creates instances
+		p = new Player(WORLDWIDTH/2,WORLDHEIGHT/2,SCALE, pName, out, color);
 		cam = new Camera((int)(WIDTH * SCALE),(int)(HEIGHT * SCALE),WORLDWIDTH,WORLDHEIGHT);
-		c = new Controller(p, cam, (int)(HEIGHT * SCALE));
+		c = new Controller(p, cam, (int)(HEIGHT * SCALE),(int)(WIDTH * SCALE));
 		
 		try {
-			out.writeUTF(pName);// on init tell server what name is
+			out.writeUTF(pName+";"+color);// on init tell server what name is
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-	    int flowerNum = rand.nextInt(10) + 40;
+	    int flowerNum = rand.nextInt(10) + 30;
 	    for(int i = 0; i < flowerNum; i++){
 	    	//random coordinates
 	    	int randomX = rand.nextInt((WORLDWIDTH) + 1);
@@ -236,7 +260,7 @@ public class Game extends Canvas implements Runnable{
 	    	}
 	    	c.addObject(new Flower(randomX,randomY,ObjectId.Flower,SCALE,fImage));
 	    }
-	    int treeNum = rand.nextInt(10) + 30;
+	    int treeNum = rand.nextInt(10) + 40;
 	    for(int i = 0; i < treeNum; i++){
 	    	//random coordinates
 	    	int randomX = rand.nextInt((WORLDWIDTH));
@@ -246,6 +270,7 @@ public class Game extends Canvas implements Runnable{
 	   
 	    	c.addObject(new Tree(randomX,randomY,ObjectId.Tree,SCALE,tImage));
 	    }
+	    c.addObject(new Tree(0,100,ObjectId.Tree,SCALE,tImage));
 	    
 	    Client input = new Client(in, this);
 		Thread thread = new Thread(input);
@@ -260,18 +285,46 @@ public class Game extends Canvas implements Runnable{
 	}
 	public void keyReleased(KeyEvent e){
 		//when game class recives call from key adapter
-		p.keyReleased(e);
+		
+		if(e.getKeyCode() == 10){
+			if(chat){
+				chat = false;
+				if(say.length()>0){
+					p.say(say);
+					try {
+						out.writeUTF("s;"+pName+";"+say);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					say = "";
+				}
+			}else{
+				chat = true;
+			}
+		}
+		if(!chat){
+			p.keyReleased(e);
+		}else{
+			if(e.getKeyCode() == 8 && say.length() > 0){
+				say = say.substring(0, say.length() - 1);
+			}
+			say += e.getKeyChar();
+			say = say.replaceAll("[^\\w!?@#$%^&*()=+-.,:;' ]","");
+			
+		}
 	}
 	public void keyPressed(KeyEvent e) {
-		p.keyPressed(e);
+		if(!chat){
+			p.keyPressed(e);
+		}
 	}
 	public void recive(String e){
 		//when game class recives input from client listener
 		String[] parts = e.split(";");//store string data in array
 		
 		if(parts[0].equals("c")){ //create player
-			c.addObject(new OtherPlayer(1000,1000,ObjectId.OtherPlayer,SCALE,Sprite.getSprite(3, 0, 8, 16), parts[1]));
-			System.out.println(pName);
+			c.addObject(new OtherPlayer(1000,1000,ObjectId.OtherPlayer,SCALE,Sprite.getSprite(3, 0, 8, 16), parts[1],parts[2]));
+
 			try {
 				out.writeUTF("u;"+pName+";"+p.getX()/SCALE+";"+p.getY()/SCALE);
 			} catch (IOException e1) {
@@ -310,6 +363,16 @@ public class Game extends Canvas implements Runnable{
 				if(tempObject.getId() == ObjectId.OtherPlayer){
 					if(parts[1].equals(tempObject.getName())){
 						c.removeObject(tempObject);
+					}
+				}
+			}
+		}
+		if(parts[0].equals("s")){ // player leave
+			for(int i = 0; i < c.object.size(); i++){
+				GameObject tempObject = c.object.get(i);
+				if(tempObject.getId() == ObjectId.OtherPlayer){
+					if(parts[1].equals(tempObject.getName())){
+						tempObject.say(parts[2]);
 					}
 				}
 			}

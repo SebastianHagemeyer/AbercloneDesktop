@@ -17,8 +17,8 @@ public class Server{
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		serverSocket = new ServerSocket(7776);
-		System.out.println("Server started, on port 7776");
+		serverSocket = new ServerSocket(2042);
+		System.out.println("Server started, on port 2021");
 		while(true){
 			socket = serverSocket.accept();
 			System.out.println("Connection from: " + socket.getInetAddress());
@@ -45,6 +45,7 @@ class Users implements Runnable{
 	String name;
 	long threadId;
 	Integer self;
+	String[] parts;
 	
 	public Users(DataOutputStream out, DataInputStream in, Users[] user,Integer i){
 		this.out = out;
@@ -52,11 +53,14 @@ class Users implements Runnable{
 		this.user = user;
 		this.self = i;
 	}
+	@SuppressWarnings("deprecation")
 	public void run(){
 		threadId = Thread.currentThread().getId();
 		try{
-			name = in.readUTF();
-			System.out.println("player name retrived: " + name);
+			name = in.readUTF();//get all join data
+			parts = name.split(";");//store string data in array
+			name = parts[0];//name
+			System.out.println("player name retrived: " + name + " and Color recived: "+parts[1]);
 		} catch(IOException e1) {
 			e1.printStackTrace();
 		}
@@ -65,7 +69,7 @@ class Users implements Runnable{
 			for(int i=0;i<10;i++){
 				if(user[i] != null){
 					if(user[i].self != this.self){
-						user[i].out.writeUTF("c;"+name);
+						user[i].out.writeUTF("c;"+name+";"+parts[1]); // send create with player name and color(parts[1])
 					}
 				}
 			}
@@ -75,7 +79,7 @@ class Users implements Runnable{
 						for(int ii=0;ii<10;ii++){
 							if(user[ii] != null){
 								if(user[ii].self != this.self){
-									user[i].out.writeUTF("c;" + user[ii].name);
+									user[i].out.writeUTF("c;" + user[ii].name+";"+user[ii].parts[1]);//tell user joining name and color of other players already joined
 								}
 							}
 						}

@@ -9,7 +9,7 @@ import util.ObjectId;
 
 public class Tree extends GameObject{
 	
-	public Tree(double x, double y, ObjectId id, double SCALE,
+	public Tree(int x, int y, ObjectId id, double SCALE,
 			BufferedImage image) {
 		super(x, y, id, SCALE, image);
 		rect = new Rectangle((int)(x-16*SCALE),(int)(y-4*SCALE),(int)(32*SCALE),(int)(4*SCALE));
@@ -25,7 +25,7 @@ public class Tree extends GameObject{
 	public void tick(LinkedList<GameObject> object) {
 		
 	}
-	public double getY() {
+	public int getY() {
 		return y;
 	}
 	public ObjectId getId() {

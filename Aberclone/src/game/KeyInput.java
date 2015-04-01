@@ -12,7 +12,7 @@ public class KeyInput extends KeyAdapter{
 		game.keyPressed(e);
 	}
     
-    public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e) throws NullPointerException{
 		game.keyReleased(e);
 	}
 }

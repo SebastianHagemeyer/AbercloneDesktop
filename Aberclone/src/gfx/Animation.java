@@ -14,12 +14,16 @@ public class Animation {
     private int totalFrames;                // total amount of frames for your animation
 
     private boolean stopped;                // has animations stopped
+    private boolean playBack = false;
 
     private List<Frame> frames = new ArrayList<Frame>();    // Arraylist of frames 
+	private boolean revert = false;
+	
 
-    public Animation(BufferedImage[] frames, int frameDelay) {
+    public Animation(BufferedImage[] frames, int frameDelay, boolean playBack) {
         this.frameDelay = frameDelay;
         this.stopped = true;
+        this.playBack = playBack;
 
         for (int i = 0; i < frames.length; i++) {
             addFrame(frames[i], frameDelay);
@@ -34,7 +38,7 @@ public class Animation {
     }
 
     public void start() {
-        if (!stopped) {
+        if (!stopped || revert) {
             return;
         }
 
@@ -43,6 +47,7 @@ public class Animation {
         }
 
         stopped = false;
+        animationDirection = 1;
     }
 
     public void stop() {
@@ -61,11 +66,18 @@ public class Animation {
         stopped = false;
         currentFrame = 0;
     }
-
+    public void revert(){
+    	if(!revert){
+    		this.revert = true;
+    		this.stopped = true;
+			//this.animationDirection = 1;
+    	}
+    }
     public void reset() {
-        this.stopped = true;
         this.frameCount = 0;
         this.currentFrame = 0;
+    	this.stopped = true;
+    	this.revert = false;
     }
 
     private void addFrame(BufferedImage frame, int duration) {
@@ -88,13 +100,44 @@ public class Animation {
 
             if (frameCount > frameDelay) {
                 frameCount = 0;
+                
                 currentFrame += animationDirection;
 
                 if (currentFrame > totalFrames - 1) {
-                    currentFrame = 0;
+                	if(playBack){
+                		currentFrame = totalFrames - 1;
+                		animationDirection = -1;
+                	}else{
+                		currentFrame = 0;
+                	}
                 }
                 else if (currentFrame < 0) {
-                    currentFrame = totalFrames - 1;
+                	if(playBack){
+                		currentFrame = 0;
+                		animationDirection = 1;
+                	}else{
+                		currentFrame = totalFrames - 1;
+                	}
+                }
+            }
+        }
+        if (revert) {
+        	frameCount++;
+
+            if (frameCount > frameDelay) {
+                frameCount = 0;
+                
+                if (currentFrame < totalFrames  && animationDirection == 1) {
+                	currentFrame += 1;
+                }
+                if(currentFrame == totalFrames){
+                	animationDirection = -1;
+                }
+                if(currentFrame > 0 && animationDirection == -1){
+                	currentFrame -= 1;
+                }
+                if(currentFrame == 0){
+                	revert = false;
                 }
             }
         }
