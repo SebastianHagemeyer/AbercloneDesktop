@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Built-By: mbhurji
+Build-Jdk: 1.7.0_71
+Created-By: Apache Maven 3.3.1
+Main-Class: com.sebalhag.aberclone.Server
+Archiver-Version: Plexus Archiver
+
